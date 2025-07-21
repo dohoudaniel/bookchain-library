@@ -32,6 +32,6 @@ ClearBounty solves the problem of centralized freelance platforms by providing a
 
 ### Installation
 ```bash
-git clone https://github.com/clearbounty/clearbounty
+git clone https://github.com/dohoudaniel/clearbounty
 cd clearbounty
 clarinet install
