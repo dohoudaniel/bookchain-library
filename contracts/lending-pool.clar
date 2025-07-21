@@ -10,9 +10,12 @@
 
 ;; List book for lending
 (define-public (list-book (book-id uint) (rate uint) (max-duration uint))
-  (begin
-    (asserts! (is-eq tx-sender (contract-call? .book-nft.get-owner book-id)) ERR_NOT_OWNER)
-    (asserts! (is-none (map-get? listed-books {book-id: book-id})) ERR_ALREADY_LISTED)
+  (let (
+      (owner-result (contract-call? .book-nft get-owner book-id))
+      (owner (unwrap! owner-result (err ERR_NOT_OWNER)))
+    )
+    (asserts! (is-eq tx-sender (unwrap! owner (err ERR_NOT_OWNER))) (err ERR_NOT_OWNER))
+    (asserts! (is-none (map-get? listed-books {book-id: book-id})) (err ERR_ALREADY_LISTED))
     (map-set listed-books {book-id: book-id}
       {lender: tx-sender, rate: rate, max-duration: max-duration})
     (ok true)
@@ -21,9 +24,11 @@
 
 ;; Remove book listing
 (define-public (delist-book (book-id uint))
-  (begin
-    (asserts! (is-some (map-get? listed-books {book-id: book-id})) ERR_NOT_LISTED)
-    (asserts! (is-eq tx-sender (get lender (unwrap! (map-get? listed-books {book-id: book-id}) none))) ERR_NOT_OWNER)
+  (let (
+      (listing (unwrap! (map-get? listed-books {book-id: book-id}) (err ERR_NOT_LISTED)))
+      (lender (get lender listing))
+    )
+    (asserts! (is-eq tx-sender lender) (err ERR_NOT_OWNER))
     (map-delete listed-books {book-id: book-id})
     (ok true)
   )

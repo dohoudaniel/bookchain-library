@@ -1,6 +1,9 @@
 ;; SIP-009 NFT implementation for digital books
 (define-constant CONTRACT_OWNER tx-sender)
-(impl-trait 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.book-nft-trait)
+
+;; Error constants
+(define-constant ERR_NOT_OWNER u401)
+(define-constant ERR_NOT_FOUND u404)
 
 ;; NFT storage
 (define-non-fungible-token book-nft uint)
@@ -30,7 +33,10 @@
 
 ;; Transfer NFT
 (define-public (transfer (token-id uint) (sender principal) (recipient principal))
-  (nft-transfer? book-nft token-id sender recipient)
+  (begin
+    (asserts! (is-eq tx-sender sender) (err ERR_NOT_OWNER))
+    (nft-transfer? book-nft token-id sender recipient)
+  )
 )
 
 ;; SIP-009 compliance
